@@ -3,24 +3,32 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 
 namespace VideoAutomation
 {
     class Program
     {
-        private const string COMPLETE_DIR = "Y:\\Downloads\\Complete";
-        private const string PROCESSING_DIR = "Y:\\Downloads\\Processing";
-        private const string CONVERTING_DIR = "Y:\\Downloads\\Converting";
-        private const string CONVERTED_DIR = "Y:\\Downloads\\Converting\\Converted";
+        //private const string COMPLETE_DIR = "Y:\\Downloads\\Complete";
+        private const string COMPLETE_DIR = "G:\\Complete";
+        
+        //private const string CONVERTING_DIR = "Y:\\Downloads\\Converting";
+        private const string CONVERTING_DIR = "H:\\Converting";
+
+        //private const string PROCESSING_DIR = "Y:\\Downloads\\Processing";
+        private const string PROCESSING_DIR = "Y:\\Processing";
+
+        //private const string CONVERTED_DIR = "Y:\\Downloads\\Converting\\Converted";
+        private const string CONVERTED_DIR = "G:\\Converting\\Converted";
+
         private const string TEMP_DIR = "Y:\\Downloads\\Temp";
 
         enum ProcessingMode
         {
             Unknown = 0,
             Move_Complete = 1,
-            Convert_Files = 2,
-            Move_Converted = 3,
-            Process_Files = 4,
+            Move_Converted = 2,
+            Process_Files = 3,
             Cleanup_Complete = 5,
             Cleanup_Converting = 6,
             Cleanup_Processing = 7,
@@ -31,388 +39,218 @@ namespace VideoAutomation
 
         static void Main(string[] args)
         {
-            //Console.WriteLine("Select option: ");
+            bool continueLoop = true;
 
-            Console.WriteLine("1. Move Complete (" + COMPLETE_DIR + ") to Converting (" + CONVERTING_DIR + ")");
-            Console.WriteLine("2. Convert Files ( " + CONVERTING_DIR + ")");
-            Console.WriteLine("3. Move Converted (" + CONVERTED_DIR + ") to Processing (" + PROCESSING_DIR + ")");
-            Console.WriteLine("4. Process Files ( " + PROCESSING_DIR + ")");
-            Console.WriteLine("5. Clean Up Complete (" + COMPLETE_DIR + ")");
-            Console.WriteLine("6. Clean Up Converting (" + CONVERTING_DIR + ")");
-            Console.WriteLine("7. Clean Up Processing (" + PROCESSING_DIR + ")");
-            Console.WriteLine("8. Clean Up Temp (" + TEMP_DIR + ")");
-
-            ProcessingMode myMode = ProcessingMode.Unknown;
-
-            while (myMode == ProcessingMode.Unknown)
+            while (continueLoop)
             {
-                var response = Console.ReadKey();
-                Console.Clear();
+                Console.WriteLine("1. Move Complete (" + COMPLETE_DIR + ") to Converting (" + CONVERTING_DIR + ")");
+                Console.WriteLine("2. Move Converted (" + CONVERTED_DIR + ") to Processing (" + PROCESSING_DIR + ")");
+                Console.WriteLine("3. Process Files ( " + PROCESSING_DIR + ")");
+                //Console.WriteLine("5. Clean Up Complete (" + COMPLETE_DIR + ")");
+                //Console.WriteLine("6. Clean Up Converting (" + CONVERTING_DIR + ")");
+                //Console.WriteLine("7. Clean Up Processing (" + PROCESSING_DIR + ")");
+                //Console.WriteLine("8. Clean Up Temp (" + TEMP_DIR + ")");
+                Console.WriteLine("9. Exit");
 
-                switch (response.KeyChar)
+                ProcessingMode myMode = ProcessingMode.Unknown;
+
+                while (myMode == ProcessingMode.Unknown)
                 {
-                    case '1':
-                        myMode = ProcessingMode.Move_Complete;
-                        Console.WriteLine("Moving files from COMPLETE to CONVERTING");
-                        break;
-                    case '2':
-                        myMode = ProcessingMode.Convert_Files;
-                        Console.WriteLine("Converting files in CONVERTING to standardized MP4");
-                        break;
-                    case '3':
-                        myMode = ProcessingMode.Move_Converted;
-                        Console.WriteLine("Moving files from CONVERTED to PROCESSING");
-                        break;
-                    case '4':
-                        myMode = ProcessingMode.Process_Files;
-                        Console.WriteLine("Processing files in PROCESSING for Plex");
-                        break;
-                    case '5':
-                        myMode = ProcessingMode.Cleanup_Complete;
-                        Console.WriteLine("Cleaning up COMPLETE");
-                        break;
-                    case '6':
-                        myMode = ProcessingMode.Cleanup_Converting;
-                        Console.WriteLine("Cleaning up CONVERTING");
-                        break;
-                    case '7':
-                        myMode = ProcessingMode.Cleanup_Processing;
-                        Console.WriteLine("Cleaning up PROCESSING");
-                        break;
-                    case '8':
-                        myMode = ProcessingMode.Cleanup_Temp;
-                        Console.WriteLine("Cleaning up TEMP");
-                        break;
-                    default:
-                        Console.WriteLine("You must enter a number from 1 to 6.");
+                    var response = Console.ReadKey();
+                    Console.Clear();
 
-                        Console.WriteLine("1. Move Complete (" + COMPLETE_DIR + ") to Converting (" + CONVERTING_DIR + ")");
-                        Console.WriteLine("2. Convert Files ( " + CONVERTING_DIR + ")");
-                        Console.WriteLine("3. Process Files ( " + PROCESSING_DIR + ")");
-                        Console.WriteLine("4. Clean Up Complete (" + COMPLETE_DIR + ")");
-                        Console.WriteLine("5. Clean Up Converting (" + CONVERTING_DIR + ")");
-                        Console.WriteLine("6. Clean Up Processing (" + PROCESSING_DIR + ")");
-
-                        break;
+                    switch (response.KeyChar)
+                    {
+                        case '1':
+                            myMode = ProcessingMode.Move_Complete;
+                            Console.WriteLine("Moving files from COMPLETE to CONVERTING");
+                            break;
+                        case '2':
+                            myMode = ProcessingMode.Move_Converted;
+                            Console.WriteLine("Moving files from CONVERTED to PROCESSING");
+                            break;
+                        case '3':
+                            myMode = ProcessingMode.Process_Files;
+                            Console.WriteLine("Processing files in PROCESSING for Plex");
+                            break;
+                        case '5':
+                            myMode = ProcessingMode.Cleanup_Complete;
+                            Console.WriteLine("Cleaning up COMPLETE");
+                            break;
+                        case '6':
+                            myMode = ProcessingMode.Cleanup_Converting;
+                            Console.WriteLine("Cleaning up CONVERTING");
+                            break;
+                        case '7':
+                            myMode = ProcessingMode.Cleanup_Processing;
+                            Console.WriteLine("Cleaning up PROCESSING");
+                            break;
+                        case '8':
+                            myMode = ProcessingMode.Cleanup_Temp;
+                            Console.WriteLine("Cleaning up TEMP");
+                            break;
+                        case '9':
+                            continueLoop = false;
+                            break;
+                        default:
+                            myMode = ProcessingMode.Unknown;
+                            break;
+                    }
                 }
+
+                if (myMode == ProcessingMode.Unknown)
+                {
+                    Console.WriteLine("You must select an option from 1 to 9.");
+                    Console.Clear();
+                }
+                else
+                {
+                    if (myMode == ProcessingMode.Move_Complete)
+                    {
+                        MoveVideos(COMPLETE_DIR, CONVERTING_DIR);
+                    }
+                    else if (myMode == ProcessingMode.Move_Converted)
+                    {
+                        MoveVideos(CONVERTED_DIR, PROCESSING_DIR);
+                    }
+                    else if (myMode == ProcessingMode.Process_Files)
+                    {
+                        ProcessVideos(PROCESSING_DIR);
+                    }
+                    else
+                    {
+                        Console.WriteLine("not yet implemented");
+                    }
+                }
+
+                Console.WriteLine("Operation completed. Returning to menu.");
+                Thread.Sleep(5000);
             }
+        }
 
-            //Console.WriteLine("Press a or A to enter auto mode. Anything else will enter manual mode.");
-            //var modeKey = Console.ReadKey(true);
+        private static void ProcessVideos(string processDir)
+        {
+            Console.WriteLine("Press M or m to begin manual mode. Any other key will enter auto mode.");
 
-            //bool AUTO_MODE = false;
+            var autoKey = Console.ReadKey(true);
 
-            //if (modeKey.KeyChar == 'a' || modeKey.KeyChar == 'A') AUTO_MODE = true;
+            bool autoMode = true;
 
-            if (myMode == ProcessingMode.Move_Complete)
+            if (autoKey.KeyChar == 'm' || autoKey.KeyChar == 'M')
+                autoMode = false;
+
+            var folders = Directory.GetDirectories(processDir);
+
+            if (folders.Length > 0)
             {
-                MoveVideos(COMPLETE_DIR, CONVERTING_DIR);
-            }
-            else if (myMode == ProcessingMode.Move_Converted)
-            {
-                MoveVideos(CONVERTED_DIR, PROCESSING_DIR);
-            }
-            else if (myMode == ProcessingMode.Process_Files)
-            {
-                var folders = Directory.GetDirectories(PROCESSING_DIR, "*", SearchOption.TopDirectoryOnly);
-
                 foreach (var folder in folders)
                 {
-                    bool hasSomething = false;
-
-                    if (folder.StartsWith(".")) continue;
-
                     Console.WriteLine("Looking into folder " + folder);
 
-                    var contents = Directory.GetFiles(folder, "*.rar", SearchOption.AllDirectories);
-
-                    //Console.WriteLine("Showing all RAR files... ");
-
-                    //foreach (var file in contents)
-                    //{
-                    //    if (file.ToLower().Contains("sample"))
-                    //    {
-                    //        File.Delete(file);
-                    //        continue;
-                    //    }
-
-                    //    hasSomething = true;
-                    //    Console.WriteLine("-- " + file);
-                    //    ProcessRAR(file, AUTO_MODE);
-                    //}
-
-                    contents = Directory.GetFiles(folder, "*.mp4", SearchOption.AllDirectories);
-
-                    Console.WriteLine("Showing all MP4 files... ");
-
-                    foreach (var file in contents)
-                    {
-                        if (file.ToLower().Contains("sample"))
-                        {
-                            File.Delete(file);
-                            continue;
-                        }
-
-                        hasSomething = true;
-                        Console.WriteLine("-- " + file);
-                        ProcessVideo(file);
-                    }
-
-                    contents = Directory.GetFiles(folder, "*.mkv", SearchOption.AllDirectories);
-
-                    Console.WriteLine("Showing all MKV files... ");
-
-                    foreach (var file in contents)
-                    {
-                        if (file.ToLower().Contains("sample"))
-                        {
-                            File.Delete(file);
-                            continue;
-                        }
-
-                        hasSomething = true;
-                        Console.WriteLine("-- " + file);
-                        ProcessVideo(file);
-                    }
-
-                    contents = Directory.GetFiles(folder, "*.avi", SearchOption.AllDirectories);
-
-                    Console.WriteLine("Showing all AVI files... ");
-
-                    foreach (var file in contents)
-                    {
-                        if (file.ToLower().Contains("sample"))
-                        {
-                            File.Delete(file);
-                            continue;
-                        }
-
-                        hasSomething = true;
-                        Console.WriteLine("-- " + file);
-                        ProcessVideo(file);
-                    }
-
-                    if (!hasSomething)
-                    {
-                        Console.WriteLine(folder + " has nothing of interest. Contents below:");
-
-                        contents = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
-
-                        foreach (var file in contents)
-                        {
-                            Console.WriteLine("-- " + file);
-                        }
-
-                        Console.WriteLine("Clear and delete folder " + folder +
-                                          "? Enter or y for yes, any other key for no.");
-
-                        var response = Console.ReadKey(true); ;
-
-                        if (response.Key == ConsoleKey.Enter || response.KeyChar == 'y' || response.KeyChar == 'Y')
-                        {
-                            Console.WriteLine("Deleting " + folder);
-                            Directory.Delete(folder, true);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Not clearing this folder.");
-                        }
-                    }
-                }
-
-                string rootFolder = PROCESSING_DIR;
-
-                var rootContents = Directory.GetFiles(rootFolder, "*.rar", SearchOption.AllDirectories);
-
-                //Console.WriteLine("Showing all RAR files... ");
-
-                //foreach (var file in rootContents)
-                //{
-                //    if (file.ToLower().Contains("sample"))
-                //    {
-                //        File.Delete(file);
-                //        continue;
-                //    }
-
-                //    Console.WriteLine("-- " + file);
-                //    ProcessRAR(file, AUTO_MODE);
-                //}
-
-                rootContents = Directory.GetFiles(rootFolder, "*.mp4", SearchOption.AllDirectories);
-
-                Console.WriteLine("Showing all MP4 files... ");
-
-                foreach (var file in rootContents)
-                {
-                    if (file.ToLower().Contains("sample"))
-                    {
-                        File.Delete(file);
-                        continue;
-                    }
-
-                    Console.WriteLine("-- " + file);
-                    ProcessVideo(file);
-                }
-
-                rootContents = Directory.GetFiles(rootFolder, "*.mkv", SearchOption.AllDirectories);
-
-                Console.WriteLine("Showing all MKV files... ");
-
-                foreach (var file in rootContents)
-                {
-                    if (file.ToLower().Contains("sample"))
-                    {
-                        File.Delete(file);
-                        continue;
-                    }
-
-                    Console.WriteLine("-- " + file);
-                    ProcessVideo(file);
-                }
-
-                rootContents = Directory.GetFiles(rootFolder, "*.avi", SearchOption.AllDirectories);
-
-                Console.WriteLine("Showing all AVI files... ");
-
-                foreach (var file in rootContents)
-                {
-                    if (file.ToLower().Contains("sample"))
-                    {
-                        File.Delete(file);
-                        continue;
-                    }
-
-                    Console.WriteLine("-- " + file);
-                    ProcessVideo(file);
-                }
-
-                rootContents = Directory.GetFiles(rootFolder, "*.mov", SearchOption.AllDirectories);
-
-                Console.WriteLine("Showing all MOV files... ");
-
-                foreach (var file in rootContents)
-                {
-                    if (file.ToLower().Contains("sample"))
-                    {
-                        File.Delete(file);
-                        continue;
-                    }
-
-                    Console.WriteLine("-- " + file);
-                    ProcessVideo(file);
+                    ProcessVideos(folder);
                 }
             }
-            //else if (pathToLook == PROCESSING_DIR)
-            //{
-            //    var folder = PROCESSING_DIR;
 
-            //    var contents = Directory.GetFiles(folder, "*.mp4", SearchOption.AllDirectories);
+            bool hasSomething = false;
+            var contents = Directory.GetFiles(processDir, "*.mp4");
 
-            //    Console.WriteLine("Showing all MP4 files... ");
+            Console.WriteLine("Showing all MP4 files... ");
 
-            //    foreach (var file in contents)
-            //    {
-            //        if (file.ToLower().Contains("sample"))
-            //        {
-            //            File.Delete(file);
-            //            continue;
-            //        }
+            foreach (var file in contents)
+            {
+                if (file.ToLower().Contains("sample"))
+                {
+                    File.Delete(file);
+                    continue;
+                }
 
-            //        Console.WriteLine("-- " + file);
-            //        RenameVideo(file, AUTO_MODE);
-            //    }
+                hasSomething = true;
+                Console.WriteLine("-- " + file);
+                RenameVideo(file, autoMode);
+            }
 
-            //    contents = Directory.GetFiles(folder, "*.mkv", SearchOption.AllDirectories);
+            contents = Directory.GetFiles(processDir, "*.mkv");
 
-            //    Console.WriteLine("Showing all MKV files... ");
+            Console.WriteLine("Showing all MKV files... ");
 
-            //    foreach (var file in contents)
-            //    {
-            //        if (file.ToLower().Contains("sample"))
-            //        {
-            //            File.Delete(file);
-            //            continue;
-            //        }
+            foreach (var file in contents)
+            {
+                if (file.ToLower().Contains("sample"))
+                {
+                    File.Delete(file);
+                    continue;
+                }
 
-            //        Console.WriteLine("-- " + file);
-            //        RenameVideo(file, AUTO_MODE);
-            //    }
+                hasSomething = true;
+                Console.WriteLine("-- " + file);
+                RenameVideo(file, autoMode);
+            }
 
-            //    contents = Directory.GetFiles(folder, "*.avi", SearchOption.AllDirectories);
+            contents = Directory.GetFiles(processDir, "*.avi");
 
-            //    Console.WriteLine("Showing all AVI files... ");
+            Console.WriteLine("Showing all AVI files... ");
 
-            //    foreach (var file in contents)
-            //    {
-            //        if (file.ToLower().Contains("sample"))
-            //        {
-            //            File.Delete(file);
-            //            continue;
-            //        }
+            foreach (var file in contents)
+            {
+                if (file.ToLower().Contains("sample"))
+                {
+                    File.Delete(file);
+                    continue;
+                }
 
-            //        Console.WriteLine("-- " + file);
-            //        RenameVideo(file, AUTO_MODE);
-            //    }
+                hasSomething = true;
+                Console.WriteLine("-- " + file);
+                RenameVideo(file, autoMode);
+            }
 
-            //    folder = PROCESSING_DIR;
+            contents = Directory.GetFiles(processDir, "*.mov");
 
-            //    contents = Directory.GetFiles(folder, "*.mp4", SearchOption.AllDirectories);
+            Console.WriteLine("Showing all MOV files... ");
 
-            //    Console.WriteLine("Showing all MP4 files... ");
+            foreach (var file in contents)
+            {
+                if (file.ToLower().Contains("sample"))
+                {
+                    File.Delete(file);
+                    continue;
+                }
 
-            //    foreach (var file in contents)
-            //    {
-            //        if (file.ToLower().Contains("sample"))
-            //        {
-            //            File.Delete(file);
-            //            continue;
-            //        }
+                hasSomething = true;
+                Console.WriteLine("-- " + file);
+                RenameVideo(file, autoMode);
+            }
 
-            //        Console.WriteLine("-- " + file);
-            //        RenameVideo(file, AUTO_MODE);
-            //    }
+            if (!hasSomething)
+            {
+                Console.WriteLine(processDir + " has nothing of interest. Cleaning it out and deleting it.");
 
-            //    contents = Directory.GetFiles(folder, "*.mkv", SearchOption.AllDirectories);
+                contents = Directory.GetFiles(processDir, "*.*", SearchOption.AllDirectories);
 
-            //    Console.WriteLine("Showing all MKV files... ");
+                foreach (var file in contents)
+                {
+                    string destFile = TEMP_DIR + "\\" + Path.GetFileName(file);
 
-            //    foreach (var file in contents)
-            //    {
-            //        if (file.ToLower().Contains("sample"))
-            //        {
-            //            File.Delete(file);
-            //            continue;
-            //        }
+                    if (File.Exists(destFile))
+                    {
+                        File.Delete(file);
+                    }
+                    else
+                    {
+                        File.Move(file, destFile);
+                    }
+                }
 
-            //        Console.WriteLine("-- " + file);
-            //        RenameVideo(file, AUTO_MODE);
-            //    }
-
-            //    contents = Directory.GetFiles(folder, "*.avi", SearchOption.AllDirectories);
-
-            //    Console.WriteLine("Showing all AVI files... ");
-
-            //    foreach (var file in contents)
-            //    {
-            //        if (file.ToLower().Contains("sample"))
-            //        {
-            //            File.Delete(file);
-            //            continue;
-            //        }
-
-            //        Console.WriteLine("-- " + file);
-            //        RenameVideo(file, AUTO_MODE);
-            //    }
-            //}
-
-            //Console.WriteLine("Done");
-
-            //if (!AUTO_MODE) Console.ReadLine();
+                Directory.Delete(processDir);
+            }
         }
 
         private static void MoveVideos(string foldername, string destFolder)
         {
+            if (!Directory.Exists(foldername)) return;
+
             var folders = Directory.GetDirectories(foldername);
+            
+            Console.WriteLine("Scanning folder " + foldername);
 
             if (folders.Length > 0)
             {
@@ -428,6 +266,7 @@ namespace VideoAutomation
 
             if (files.Length == 0 && folders.Length == 0)
             {
+                Console.WriteLine("Deleting folder " + foldername);
                 Directory.Delete(foldername);
             }
             else
@@ -435,6 +274,10 @@ namespace VideoAutomation
                 foreach (var file in files)
                 {
                     if (file.Length == 0) continue;
+
+                    var fileInfo = new FileInfo(file);
+
+                    if (fileInfo.Length == 0) continue;
 
                     if (file.ToLower().Contains("sample") || file.ToLower().Contains("trailer"))
                     {
@@ -447,28 +290,49 @@ namespace VideoAutomation
                     if (extension == ".mov" || extension == ".mkv" || extension == ".avi" || extension == ".mp4")
                     {
                         string destFile = destFolder + "\\" + Path.GetFileName(file);
+                        string ignoreFile = foldername + "\\" +  Path.GetFileNameWithoutExtension(file) + ".unknown.ignore";
 
-                        if (!File.Exists(destFile))
+                        if (File.Exists(ignoreFile))
                         {
-                            File.Move(file, destFile);
+                            Console.WriteLine("File not totally downloaded. Not moving.");
+
+                        }
+                        else if (!File.Exists(destFile))
+                        {
+                            try
+                            {
+                                File.Move(file, destFile);
+                                Console.WriteLine("Moved " + file + ".");
+                            }
+                            catch
+                            {
+                                Console.WriteLine("Cannot move " + file + " as it is in use.");
+                            }
                         }
                         else
                         {
                             File.Delete(file);
                         }
                     }
-                    else
+                    else if (extension != ".ignore")
                     {
                         string destFile = TEMP_DIR + "\\" + Path.GetFileName(file);
 
-                        File.Copy(file, destFile, true);
-                        File.Delete(file);
+                        try
+                        {
+                            File.Copy(file, destFile, true);
+                            File.Delete(file);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Cannot move " + file + " as it is in use.");
+                        }
                     }
                 }
             }
         }
 
-        private static void ProcessVideo(string file, bool AUTO_MODE = false)
+        private static void RenameVideo(string file, bool AUTO_MODE)
         {
             var botProc = new Process();
 
@@ -642,6 +506,6 @@ namespace VideoAutomation
             }
         }
 
-       
+
     }
 }
