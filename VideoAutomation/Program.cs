@@ -9,19 +9,11 @@ namespace VideoAutomation
 {
     class Program
     {
-        //private const string COMPLETE_DIR = "Y:\\Downloads\\Complete";
-        private const string COMPLETE_DIR = "G:\\Complete";
-        
-        //private const string CONVERTING_DIR = "Y:\\Downloads\\Converting";
-        private const string CONVERTING_DIR = "H:\\Converting";
-
-        //private const string PROCESSING_DIR = "Y:\\Downloads\\Processing";
-        private const string PROCESSING_DIR = "Y:\\Processing";
-
-        //private const string CONVERTED_DIR = "Y:\\Downloads\\Converting\\Converted";
-        private const string CONVERTED_DIR = "G:\\Converting\\Converted";
-
-        private const string TEMP_DIR = "Y:\\Downloads\\Temp";
+        private const string COMPLETE_DIR = "M:\\Downloads";
+        private const string CONVERTING_DIR = "M:\\Converting";
+        private const string CONVERTED_DIR = "M:\\Converting\\Converted";
+        private const string PROCESSING_DIR = "M:\\Processing";
+        private const string DESTINATION_DIR = "U:\\";
 
         enum ProcessingMode
         {
@@ -35,8 +27,14 @@ namespace VideoAutomation
             Cleanup_Temp = 8
         }
 
-        //private const string FILEBOT = "C:\\Users\\Brian\\AppData\\Local\\Microsoft\\WindowsApps\\filebot.exe";
+        //static void Main()
+        //{
+        //    var form = new VideoAutomation();
+        //    form.ShowDialog();
+        //}
 
+        //private const string FILEBOT = "C:\\Users\\Brian\\AppData\\Local\\Microsoft\\WindowsApps\\filebot.exe";
+        
         static void Main(string[] args)
         {
             bool continueLoop = true;
@@ -127,6 +125,7 @@ namespace VideoAutomation
                 Thread.Sleep(5000);
             }
         }
+        
 
         private static void ProcessVideos(string processDir)
         {
