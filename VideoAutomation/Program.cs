@@ -13,25 +13,27 @@ namespace VideoAutomation
         private const string CONVERTING_DIR = "M:\\Converting";
         private const string CONVERTED_DIR = "M:\\Converting\\Converted";
         private const string PROCESSING_DIR = "M:\\Processing";
-        private const string DESTINATION_DIR = "U:\\";
+
+        private const string PROCESSING_MOVIES = "M:\\Processing\\Movies";
+        private const string PROCESSING_TV = "M:\\Processing\\TV";
+        private const string PROCESSING_ANIME = "M:\\Processing\\Anime";
+
+        private const string TEMP_DIR = "M:\\Holding";
+        private const string DESTINATION_DIR = "Y:\\";
 
         enum ProcessingMode
         {
             Unknown = 0,
-            Move_Complete = 1,
-            Move_Converted = 2,
-            Process_Files = 3,
-            Cleanup_Complete = 5,
-            Cleanup_Converting = 6,
-            Cleanup_Processing = 7,
-            Cleanup_Temp = 8
+            Consolidate = 1,
+            Move_Complete = 2,
+            Move_Converted = 3,
+            Sort_Files = 4,
+            Process_Movies = 5,
+            Process_TV = 6,
+            Process_Anime = 7,
+            Procese_Other = 8,
+            Cleanup_Temp = 9
         }
-
-        //static void Main()
-        //{
-        //    var form = new VideoAutomation();
-        //    form.ShowDialog();
-        //}
 
         //private const string FILEBOT = "C:\\Users\\Brian\\AppData\\Local\\Microsoft\\WindowsApps\\filebot.exe";
         
@@ -41,14 +43,16 @@ namespace VideoAutomation
 
             while (continueLoop)
             {
-                Console.WriteLine("1. Move Complete (" + COMPLETE_DIR + ") to Converting (" + CONVERTING_DIR + ")");
-                Console.WriteLine("2. Move Converted (" + CONVERTED_DIR + ") to Processing (" + PROCESSING_DIR + ")");
-                Console.WriteLine("3. Process Files ( " + PROCESSING_DIR + ")");
-                //Console.WriteLine("5. Clean Up Complete (" + COMPLETE_DIR + ")");
-                //Console.WriteLine("6. Clean Up Converting (" + CONVERTING_DIR + ")");
-                //Console.WriteLine("7. Clean Up Processing (" + PROCESSING_DIR + ")");
-                //Console.WriteLine("8. Clean Up Temp (" + TEMP_DIR + ")");
-                Console.WriteLine("9. Exit");
+                Console.WriteLine("1. Consolidate (" + COMPLETE_DIR + ")");
+                Console.WriteLine("2. Move Complete (" + COMPLETE_DIR + ") to Converting (" + CONVERTING_DIR + ")");
+                Console.WriteLine("3. Move Converted (" + CONVERTED_DIR + ") to Processing (" + PROCESSING_DIR + ")");
+                Console.WriteLine("4. Sort Files ( " + PROCESSING_DIR + ")");
+                Console.WriteLine("5. Process Movies ( " + PROCESSING_MOVIES + ")");
+                Console.WriteLine("6. Process TV ( " + PROCESSING_TV + ")");
+                Console.WriteLine("7. Process Anime ( " + PROCESSING_ANIME + ")");
+                //Console.WriteLine("8. Process Anime ( " + PROCESSING_OTHER + ")");
+
+                Console.WriteLine("To exit, close this window or press ESC.");
 
                 ProcessingMode myMode = ProcessingMode.Unknown;
 
@@ -57,39 +61,42 @@ namespace VideoAutomation
                     var response = Console.ReadKey();
                     Console.Clear();
 
+                    if (response.Key == ConsoleKey.Escape)
+                    {
+                        continueLoop = false;
+                        break;
+                    }
+
                     switch (response.KeyChar)
                     {
                         case '1':
+                            myMode = ProcessingMode.Consolidate;
+                            Console.WriteLine("Consolidating files in COMPLETE");
+                            break;
+                        case '2':
                             myMode = ProcessingMode.Move_Complete;
                             Console.WriteLine("Moving files from COMPLETE to CONVERTING");
                             break;
-                        case '2':
+                        case '3':
                             myMode = ProcessingMode.Move_Converted;
                             Console.WriteLine("Moving files from CONVERTED to PROCESSING");
                             break;
-                        case '3':
-                            myMode = ProcessingMode.Process_Files;
-                            Console.WriteLine("Processing files in PROCESSING for Plex");
+                        case '4':
+                            myMode = ProcessingMode.Sort_Files;
+                            Console.WriteLine("Sorting files in PROCESSING");
                             break;
                         case '5':
-                            myMode = ProcessingMode.Cleanup_Complete;
-                            Console.WriteLine("Cleaning up COMPLETE");
+                            myMode = ProcessingMode.Process_Movies;
+                            Console.WriteLine("Processing movies in " + PROCESSING_MOVIES);
                             break;
                         case '6':
-                            myMode = ProcessingMode.Cleanup_Converting;
-                            Console.WriteLine("Cleaning up CONVERTING");
+                            myMode = ProcessingMode.Process_TV;
+                            Console.WriteLine("Processing TV in " + PROCESSING_TV);
                             break;
                         case '7':
-                            myMode = ProcessingMode.Cleanup_Processing;
-                            Console.WriteLine("Cleaning up PROCESSING");
-                            break;
-                        case '8':
-                            myMode = ProcessingMode.Cleanup_Temp;
-                            Console.WriteLine("Cleaning up TEMP");
-                            break;
-                        case '9':
-                            continueLoop = false;
-                            break;
+                            myMode = ProcessingMode.Process_Anime;
+                            Console.WriteLine("Processing anime in " + PROCESSING_ANIME);
+                            break;                        
                         default:
                             myMode = ProcessingMode.Unknown;
                             break;
@@ -103,26 +110,11 @@ namespace VideoAutomation
                 }
                 else
                 {
-                    if (myMode == ProcessingMode.Move_Complete)
-                    {
-                        MoveVideos(COMPLETE_DIR, CONVERTING_DIR);
-                    }
-                    else if (myMode == ProcessingMode.Move_Converted)
-                    {
-                        MoveVideos(CONVERTED_DIR, PROCESSING_DIR);
-                    }
-                    else if (myMode == ProcessingMode.Process_Files)
-                    {
-                        ProcessVideos(PROCESSING_DIR);
-                    }
-                    else
-                    {
-                        Console.WriteLine("not yet implemented");
-                    }
+                  
                 }
 
                 Console.WriteLine("Operation completed. Returning to menu.");
-                Thread.Sleep(5000);
+                Thread.Sleep(2500);
             }
         }
         
